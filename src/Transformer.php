@@ -2,15 +2,19 @@
 
 namespace HuangYi\DBLog;
 
-use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Events\TransactionBeginning;
+use Illuminate\Database\Events\TransactionCommitted;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class Transformer
 {
     /**
-     * @var \Illuminate\Database\DatabaseManager
+     * @var \Illuminate\Support\Collection
      */
-    protected $db;
+    protected $events;
 
     /**
      * @var \Illuminate\Http\Request
@@ -25,12 +29,12 @@ class Transformer
     /**
      * Transformer constructor.
      *
-     * @param \Illuminate\Database\DatabaseManager $db
+     * @param \Illuminate\Support\Collection $events
      * @param \Illuminate\Http\Request $request
      */
-    public function __construct(DatabaseManager $db, Request $request)
+    public function __construct(Collection $events, Request $request)
     {
-        $this->db = $db;
+        $this->events = $events;
         $this->request = $request;
     }
 
@@ -41,54 +45,122 @@ class Transformer
      */
     public function transform()
     {
-        $queries = $this->collectQueries();
+        $this->content = $this->formatEvents();
 
-        $this->content = $this->formatQueries($queries);
+        if (! empty($this->content)) {
+            $this->content = $this->formatRequest() . $this->content;
+        }
 
         return $this;
     }
 
     /**
-     * Collect queries.
+     * Format events.
      *
-     * @return array
-     */
-    protected function collectQueries()
-    {
-        $queries = [];
-
-        foreach ($this->db->getConnections() as $name => $connection) {
-            $logs = $connection->getQueryLog();
-
-            if (empty($logs)) {
-                continue;
-            }
-
-            $queries[$name] = $logs;
-        }
-
-        return $queries;
-    }
-
-    /**
-     * Format queries.
-     *
-     * @param array $queries
      * @return string
      */
-    protected function formatQueries(array $queries)
+    protected function formatEvents()
     {
-        if (empty($queries)) {
-            return '';
+        $content = '';
+
+        if ($this->events->isEmpty()) {
+            return $content;
         }
 
-        $content = $this->formatRequest();
-
-        foreach ($queries as $connection => $logs) {
-            $content .= $this->formatLogs($connection, $logs);
+        foreach ($this->events as $event) {
+            $content .= $this->formatEvent($event);
         }
 
         return $content;
+    }
+
+    /**
+     * Format event.
+     *
+     * @param mixed $event
+     * @return string
+     */
+    protected function formatEvent($event)
+    {
+        $content = '';
+
+        switch (true) {
+            case $event instanceof QueryExecuted:
+                $content = $this->formatQueryExecuted($event);
+                break;
+
+            case $event instanceof TransactionBeginning:
+                $content = $this->formatTransactionBeginning($event);
+                break;
+
+            case $event instanceof TransactionCommitted:
+                $content = $this->formatTransactionCommitted($event);
+                break;
+
+            case $event instanceof TransactionRolledBack:
+                $content = $this->formatTransactionRolledBack($event);
+                break;
+        }
+
+        return $content;
+    }
+
+    /**
+     * Format query executed.
+     *
+     * @param \Illuminate\Database\Events\QueryExecuted $event
+     * @return string
+     */
+    protected function formatQueryExecuted(QueryExecuted $event)
+    {
+        $sql = $event->sql;
+
+        foreach ($event->bindings as $key => $value) {
+            if (is_int($key)) {
+                if (($start = strpos($sql, '?')) !== false) {
+                    continue;
+                }
+
+                $sql = substr_replace($sql, "'{$value}'", $start, 1);
+            } else {
+                $sql = str_replace(":{$key}", "'{$value}'", $sql);
+            }
+        }
+
+        return sprintf("%s [%sms, %s]\n", $sql, $event->time, $event->connectionName);
+    }
+
+    /**
+     * Format transaction beginning.
+     *
+     * @param \Illuminate\Database\Events\TransactionBeginning $event
+     * @return string
+     */
+    protected function formatTransactionBeginning(TransactionBeginning $event)
+    {
+        return sprintf("[Transaction beginning: %s]\n", $event->connectionName);
+    }
+
+    /**
+     * Format transaction committed.
+     *
+     * @param \Illuminate\Database\Events\TransactionCommitted $event
+     * @return string
+     */
+    protected function formatTransactionCommitted(TransactionCommitted $event)
+    {
+        return sprintf("[Transaction committed: %s]\n", $event->connectionName);
+    }
+
+    /**
+     * Format transaction rolledB back.
+     *
+     * @param \Illuminate\Database\Events\TransactionRolledBack $event
+     * @return string
+     */
+    protected function formatTransactionRolledBack(TransactionRolledBack $event)
+    {
+        return sprintf("[Transaction rolled back: %s]\n", $event->connectionName);
     }
 
     /**
@@ -106,49 +178,6 @@ class Transformer
         }
 
         return $content;
-    }
-
-    /**
-     * Format logs.
-     *
-     * @param string $connection
-     * @param array $logs
-     * @return string
-     */
-    protected function formatLogs($connection, array $logs)
-    {
-        $content = "[{$connection}]\n";
-
-        foreach ($logs as $query) {
-            $content .= $this->formatSql($query);
-        }
-
-        return $content;
-    }
-
-    /**
-     * Format sql.
-     *
-     * @param array $query
-     * @return string
-     */
-    protected function formatSql(array $query)
-    {
-        $sql = $query['query'];
-
-        foreach ($query['bindings'] as $key => $value) {
-            if (is_int($key)) {
-                if (($start = strpos($sql, '?')) !== false) {
-                    continue;
-                }
-
-                $sql = substr_replace($sql, "'{$value}'", $start, 1);
-            } else {
-                $sql = str_replace(":{$key}", "'{$value}'", $sql);
-            }
-        }
-
-        return sprintf("%s [%sms]\n", $sql, $query['time']);
     }
 
     /**
