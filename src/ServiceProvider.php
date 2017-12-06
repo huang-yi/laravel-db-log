@@ -2,11 +2,16 @@
 
 namespace HuangYi\DBLog;
 
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Events\TransactionBeginning;
+use Illuminate\Database\Events\TransactionCommitted;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Log\Writer;
-use Illuminate\Support\ServiceProvider as BaseServiceProvidor;
+use Illuminate\Support\Collection;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Monolog\Logger as Monolog;
 
-class ServiceProvider extends BaseServiceProvidor
+class ServiceProvider extends BaseServiceProvider
 {
     /**
      * Register the service provider.
@@ -21,21 +26,15 @@ class ServiceProvider extends BaseServiceProvidor
             return $this->createLogger();
         });
 
-        $this->logQueries();
-    }
+        if ($this->debugging()) {
+            $this->app->singleton('db.events', function () {
+                return Collection::make();
+            });
 
-    /**
-     * Log queries.
-     */
-    protected function logQueries()
-    {
-        if (! $this->debugging()) {
-            return;
+            $this->listenEvents();
+
+            register_shutdown_function([$this, 'logQueries']);
         }
-
-        $this->enableQueryLog();
-
-        register_shutdown_function([$this, 'onShutdown']);
     }
 
     /**
@@ -47,21 +46,30 @@ class ServiceProvider extends BaseServiceProvidor
     }
 
     /**
-     * Enable query log.
+     * Listen events.
      */
-    protected function enableQueryLog()
+    protected function listenEvents()
     {
-        foreach ($this->app['db']->getConnections() as $connection) {
-            $connection->enableQueryLog();
+        $events = [
+            QueryExecuted::class,
+            TransactionBeginning::class,
+            TransactionCommitted::class,
+            TransactionRolledBack::class,
+        ];
+
+        foreach ($events as $event) {
+            $this->app['events']->listen($event, function ($event) {
+                $this->app['db.events']->push($event);
+            });
         }
     }
 
     /**
-     * "onShutdown" Handler.
+     * Log queries.
      */
-    public function onShutdown()
+    public function logQueries()
     {
-        $transformer = new Transformer($this->app['db'], $this->app['request']);
+        $transformer = new Transformer($this->app['db.events'], $this->app['request']);
         $content = (string) $transformer;
 
         if (empty($content)) {
