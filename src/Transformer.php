@@ -55,6 +55,19 @@ class Transformer
     }
 
     /**
+     * Format request.
+     *
+     * @return string
+     */
+    protected function formatRequest()
+    {
+        $inputs = $this->request->input();
+        $content = sprintf("[Request: %s %s]", $this->request->url(), json_encode($inputs));
+
+        return $content;
+    }
+
+    /**
      * Format events.
      *
      * @return string
@@ -127,7 +140,7 @@ class Transformer
             }
         }
 
-        return sprintf("%s [%sms, %s]\n", $sql, $event->time, $event->connectionName);
+        return sprintf("\n%s [%sms, %s]", $sql, $event->time, $event->connectionName);
     }
 
     /**
@@ -138,7 +151,7 @@ class Transformer
      */
     protected function formatTransactionBeginning(TransactionBeginning $event)
     {
-        return sprintf("[Transaction beginning: %s]\n", $event->connectionName);
+        return sprintf("\n[Transaction beginning: %s]", $event->connectionName);
     }
 
     /**
@@ -149,7 +162,7 @@ class Transformer
      */
     protected function formatTransactionCommitted(TransactionCommitted $event)
     {
-        return sprintf("[Transaction committed: %s]\n", $event->connectionName);
+        return sprintf("\n[Transaction committed: %s]", $event->connectionName);
     }
 
     /**
@@ -160,24 +173,7 @@ class Transformer
      */
     protected function formatTransactionRolledBack(TransactionRolledBack $event)
     {
-        return sprintf("[Transaction rolled back: %s]\n", $event->connectionName);
-    }
-
-    /**
-     * Format request.
-     *
-     * @return string
-     */
-    protected function formatRequest()
-    {
-        $inputs = $this->request->input();
-        $content = sprintf("Request: %s.\n", $this->request->fullUrl());
-
-        if (! empty($inputs)) {
-            $content .= sprintf("Inputs: %s.\n", json_encode($inputs));
-        }
-
-        return $content;
+        return sprintf("\n[Transaction rolled back: %s]", $event->connectionName);
     }
 
     /**
