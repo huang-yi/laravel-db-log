@@ -27,5 +27,12 @@
         "psr-4": {
             "HuangYi\\DBLog\\Tests\\": "tests"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HuangYi\\DBLog\\ServiceProvider"
+            ]
+        }
     }
 }
