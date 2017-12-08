@@ -1,28 +1,28 @@
 # Laravel DB Log
 
-This package logs your database queries.
+该拓展包能帮助开发者记录所有的数据库查询。
 
-## Installation
+## 安装
 
 ```shell
 $ composer require huang-yi/laravel-db-log
 ```
 
-## Usage
+## 使用
 
-Add this configuration to your application's `.env` file:
+往项目的`.env`文件里填加一项配置即可：
 
 ```
 DB_DEBUG=true
 ```
 
-And then, all the database queries will be logged into the `storage/logs/sql.log` file by default.
+当有程序有执行数据库查询时，默认会往`storage/logs/sql.log`文件中打印所有执行过的SQL语句。
 
-## Configuration
+## 配置
 
-> In general, developers do not need to modify any configurations.
+> 一般情况下，开发者不需要修改任何配置即可正常使用该拓展包。
 
-Copy the following options into the `config/database.php` file:
+如果你需要做一些定制化的配置，可以将以下选项复制到`config/database.php`文件中：
 
 ```php
 <?php
@@ -56,11 +56,13 @@ return [
 ];
 ```
 
-The `log` option is similar to Laravel's log.
+其中`debug`配置项为开关；
 
-## Chinese Doc
-
-[中文文档](README-zh.md)
+`log`为日志相关配置（与Laravel的日志配置一致）：
+- `log.handler`可选值为`single`, `daily`, `syslog`, `errorlog`；
+- `log.level`为Monolog的日志等级，可选值为`debug`, `info`, `notice`, `warning`, `error`, `critical`, `alter`, `emergency`；
+- `log.channel`为Monolog的频道名；
+- `log.max_files`只有`log.handler`值为`daily`时有效，表示日志文件最大保留数；
 
 ## License
 
