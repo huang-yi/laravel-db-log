@@ -16,13 +16,27 @@ $ composer require huang-yi/laravel-db-log
 DB_DEBUG=true
 ```
 
-当有程序有执行数据库查询时，默认会往`storage/logs/sql.log`文件中打印所有执行过的SQL语句。
+如果使用的Laravel版本小于5.5，则需要手动注册服务：
+
+```php
+<?php
+
+// config/app.php
+
+return [
+    'providers' => [
+        HuangYi\DBLog\ServiceProvider::class,
+    ],
+];
+```
+
+完成以上配置后，只要程序有数据库查询，都会往`storage/logs/sql.log`文件中打印所有执行过的SQL语句。
 
 ## 配置
 
 > 一般情况下，开发者不需要修改任何配置即可正常使用该拓展包。
 
-如果你需要做一些定制化的配置，可以将以下选项复制到`config/database.php`文件中：
+如果你需要做一些定制化的配置，可以将以下选项复制到`config/database.php`文件中（这一步是可选的）：
 
 ```php
 <?php

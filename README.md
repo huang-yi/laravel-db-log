@@ -19,13 +19,27 @@ Add this configuration to your application's `.env` file:
 DB_DEBUG=true
 ```
 
-And then, all the database queries will be logged into the `storage/logs/sql.log` file by default.
+And, you should manually register the service provider if the Laravel version is less than 5.5:
+
+```php
+<?php
+
+// config/app.php
+
+return [
+    'providers' => [
+        HuangYi\DBLog\ServiceProvider::class,
+    ],
+];
+```
+
+Then, all the database queries will be logged into the `storage/logs/sql.log` file by default.
 
 ## Configuration
 
 > In general, developers do not need to modify any configurations.
 
-Copy the following options into the `config/database.php` file:
+If you don't want to keep the default configurations, just copy the following options into the `config/database.php` file:
 
 ```php
 <?php
