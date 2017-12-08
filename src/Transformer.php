@@ -133,14 +133,16 @@ class Transformer
         $sql = $event->sql;
 
         foreach ($event->bindings as $key => $value) {
+            $value = sprintf("'%s'", str_replace("'", "\'", $value));
+
             if (is_int($key)) {
                 if (($start = strpos($sql, '?')) === false) {
                     continue;
                 }
 
-                $sql = substr_replace($sql, "'{$value}'", $start, 1);
+                $sql = substr_replace($sql, $value, $start, 1);
             } else {
-                $sql = str_replace(":{$key}", "'{$value}'", $sql);
+                $sql = str_replace(":{$key}", $value, $sql);
             }
         }
 
