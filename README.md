@@ -1,6 +1,7 @@
 # Laravel DB Log
 
-[![License](https://poser.pugx.org/huang-yi/laravel-db-log/license)](https://packagist.org/packages/huang-yi/laravel-db-log)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Build Status](https://api.travis-ci.org/huang-yi/laravel-db-log.svg?branch=master)](https://travis-ci.org/huang-yi/laravel-db-log)
 
 This package logs your database queries.
 
