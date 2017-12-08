@@ -1,6 +1,6 @@
 {
     "name": "huang-yi/laravel-db-log",
-    "description": "Logs Database queries for Laravel.",
+    "description": "Logs database queries for Laravel.",
     "keywords": ["laravel", "database", "sql", "log"],
     "license": "MIT",
     "authors": [
