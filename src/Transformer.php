@@ -134,7 +134,7 @@ class Transformer
 
         foreach ($event->bindings as $key => $value) {
             if (is_int($key)) {
-                if (($start = strpos($sql, '?')) !== false) {
+                if (($start = strpos($sql, '?')) === false) {
                     continue;
                 }
 
