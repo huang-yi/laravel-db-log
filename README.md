@@ -1,5 +1,7 @@
 # Laravel DB Log
 
+[![Software License][ico-license]](LICENSE)
+
 This package logs your database queries.
 
 ## Installation
