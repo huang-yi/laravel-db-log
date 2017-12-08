@@ -1,6 +1,6 @@
 # Laravel DB Log
 
-[![Software License][ico-license]](LICENSE)
+[![License](https://poser.pugx.org/huang-yi/laravel-db-log/license)](https://packagist.org/packages/huang-yi/laravel-db-log)
 
 This package logs your database queries.
 
