@@ -22,19 +22,21 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/database.php', 'database');
 
+        if (! $this->debugging()) {
+            return;
+        }
+
         $this->app->singleton('db.log', function () {
             return $this->createLogger();
         });
 
-        if ($this->debugging()) {
-            $this->app->singleton('db.events', function () {
-                return Collection::make();
-            });
+        $this->app->singleton('db.events', function () {
+            return Collection::make();
+        });
 
-            $this->listenEvents();
+        $this->listenEvents();
 
-            register_shutdown_function([$this, 'logQueries']);
-        }
+        register_shutdown_function([$this, 'logQueries']);
     }
 
     /**
