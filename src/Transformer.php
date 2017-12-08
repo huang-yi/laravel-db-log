@@ -61,8 +61,12 @@ class Transformer
      */
     protected function formatRequest()
     {
-        $inputs = $this->request->input();
-        $content = sprintf("[Request: %s %s]", $this->request->url(), json_encode($inputs));
+        $method = $this->request->getMethod();
+        $content = sprintf("%s %s", $method, $this->request->fullUrl());
+
+        if ($method !== 'GET') {
+            $content = sprintf("%s %s", $content, json_encode($this->request->all()));
+        }
 
         return $content;
     }
