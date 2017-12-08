@@ -142,7 +142,7 @@ class Transformer
 
                 $sql = substr_replace($sql, $value, $start, 1);
             } else {
-                $sql = str_replace(":{$key}", $value, $sql);
+                $sql = str_replace($key, $value, $sql);
             }
         }
 
