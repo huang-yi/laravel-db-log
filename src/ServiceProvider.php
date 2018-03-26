@@ -25,7 +25,7 @@ class ServiceProvider extends BaseServiceProvider
         }
 
         $this->app->singleton('db.log', function () {
-            return $this->app['db']->channel('db');
+            return $this->app['log']->channel('db');
         });
 
         $this->app->singleton('db.events', function () {
