@@ -18,7 +18,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/logging.php.php', 'logging.channels');
+        $this->mergeConfigFrom(__DIR__ . '/../config/logging.php', 'logging.channels');
 
         if (! $this->debugging()) {
             return;
