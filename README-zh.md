@@ -2,10 +2,17 @@
 
 该拓展包能帮助开发者记录所有的数据库查询。
 
+## 版本兼容
+
+Laravel | Laravel-DB-Log
+:--:|:--:
+<=5.5 | [1.5](https://github.com/huang-yi/laravel-db-log/blob/1.5/README-zh.md)
+5.6 | 1.6
+
 ## 安装
 
 ```shell
-$ composer require huang-yi/laravel-db-log
+$ composer require huang-yi/laravel-db-log:1.6.*
 ```
 
 ## 使用
@@ -13,70 +20,31 @@ $ composer require huang-yi/laravel-db-log
 往项目的`.env`文件里填加一项配置即可：
 
 ```
-DB_DEBUG=true
+DB_LOG=true
 ```
-
-如果使用的Laravel版本小于5.5，则需要手动注册服务：
-
-```php
-<?php
-
-// config/app.php
-
-return [
-    'providers' => [
-        HuangYi\DBLog\ServiceProvider::class,
-    ],
-];
-```
-
-完成以上配置后，只要程序有数据库查询，都会往`storage/logs/sql.log`文件中打印所有执行过的SQL语句。
 
 ## 配置
 
 > 一般情况下，开发者不需要修改任何配置即可正常使用该拓展包。
 
-如果你需要做一些定制化的配置，可以将以下选项复制到`config/database.php`文件中（这一步是可选的）：
+如果你需要做一些定制化的配置，可以在系统配置文件`config/logging.php`中填加一项名为`db`的`channel`（这一步是可选的）：
 
 ```php
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Database Debug Mode
-    |--------------------------------------------------------------------------
-    |
-    | When database is in debug mode, all database queries will be logged.
-    |
-    */
-    'debug' => env('DB_DEBUG', false),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logging Configuration
-    |--------------------------------------------------------------------------
-    |
-    */
-    'log' => [
-        'handler' => env('DB_LOG', 'single'),
-
-        'level' => env('DB_LOG_LEVEL', 'debug'),
-
-        'channel' => env('DB_LOG_CHANNEL', 'sql'),
-
-        'max_files' => env('DB_LOG_MAX_FILES', 5),
+    'channels' => [
+        'db' => [
+            'debug' => env('DB_LOG', false),
+            'name' => env('DB_LOG_NAME', 'sql'),
+            'driver' => env('DB_LOG_DRIVER', 'daily'),
+            'path' => storage_path('logs/sql.log'),
+            'level' => env('DB_LOG_LEVEL', 'debug'),
+            'days' => env('DB_LOG_MAX_FILES', 2),
+        ],
     ],
 ];
 ```
-
-其中`debug`配置项为开关；
-
-`log`为日志相关配置（与Laravel的日志配置一致）：
-- `log.handler`可选值为`single`, `daily`, `syslog`, `errorlog`；
-- `log.level`为Monolog的日志等级，可选值为`debug`, `info`, `notice`, `warning`, `error`, `critical`, `alter`, `emergency`；
-- `log.channel`为Monolog的频道名；
-- `log.max_files`只有`log.handler`值为`daily`时有效，表示日志文件最大保留数；
 
 ## License
 

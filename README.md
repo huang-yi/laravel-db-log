@@ -5,10 +5,17 @@
 
 This package logs your database queries.
 
+## Version Compatibility
+
+Laravel | Laravel-DB-Log
+:--:|:--:
+<=5.5 | [1.5](https://github.com/huang-yi/laravel-db-log/blob/1.5/README.md)
+5.6 | 1.6
+
 ## Installation
 
 ```shell
-$ composer require huang-yi/laravel-db-log
+$ composer require huang-yi/laravel-db-log:1.6.*
 ```
 
 ## Usage
@@ -16,64 +23,31 @@ $ composer require huang-yi/laravel-db-log
 Add this configuration to your application's `.env` file:
 
 ```
-DB_DEBUG=true
+DB_LOG=true
 ```
-
-And, you should manually register the service provider if the Laravel version is less than 5.5:
-
-```php
-<?php
-
-// config/app.php
-
-return [
-    'providers' => [
-        HuangYi\DBLog\ServiceProvider::class,
-    ],
-];
-```
-
-Then, all the database queries will be logged into the `storage/logs/sql.log` file by default.
 
 ## Configuration
 
 > In general, developers do not need to modify any configurations.
 
-If you don't want to keep the default configurations, just copy the following options into the `config/database.php` file:
+If you don't want to keep the default configurations, just copy the following options into the `config/logging.php` file:
 
 ```php
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Database Debug Mode
-    |--------------------------------------------------------------------------
-    |
-    | When database is in debug mode, all database queries will be logged.
-    |
-    */
-    'debug' => env('DB_DEBUG', false),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logging Configuration
-    |--------------------------------------------------------------------------
-    |
-    */
-    'log' => [
-        'handler' => env('DB_LOG', 'single'),
-
-        'level' => env('DB_LOG_LEVEL', 'debug'),
-
-        'channel' => env('DB_LOG_CHANNEL', 'sql'),
-
-        'max_files' => env('DB_LOG_MAX_FILES', 5),
+    'channels' => [
+        'db' => [
+            'debug' => env('DB_LOG', false),
+            'name' => env('DB_LOG_NAME', 'sql'),
+            'driver' => env('DB_LOG_DRIVER', 'daily'),
+            'path' => storage_path('logs/sql.log'),
+            'level' => env('DB_LOG_LEVEL', 'debug'),
+            'days' => env('DB_LOG_MAX_FILES', 2),
+        ],
     ],
 ];
 ```
-
-The `log` option is similar to Laravel's log.
 
 ## Chinese Doc
 
