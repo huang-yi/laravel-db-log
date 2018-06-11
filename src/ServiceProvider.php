@@ -30,13 +30,37 @@ class ServiceProvider extends BaseServiceProvider
             return $this->createLogger();
         });
 
-        $this->app->singleton('db.events', function () {
-            return Collection::make();
-        });
+        $this->registerDbEvents();
 
         $this->listenEvents();
 
-        register_shutdown_function([$this, 'logQueries']);
+        $this->logWhenTerminating();
+    }
+
+    /**
+     * Register db events.
+     *
+     * @return void
+     */
+    protected function registerDbEvents()
+    {
+        $this->app->singleton('db.events', function () {
+            return Collection::make();
+        });
+    }
+
+    /**
+     * Log when terminating application.
+     *
+     * @return void
+     */
+    protected function logWhenTerminating()
+    {
+        $this->app->terminating(function () {
+            $this->logQueries();
+
+            $this->registerDbEvents();
+        });
     }
 
     /**
