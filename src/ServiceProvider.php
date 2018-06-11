@@ -24,20 +24,56 @@ class ServiceProvider extends BaseServiceProvider
             return;
         }
 
-        $this->app->singleton('db.log', function () {
-            return $this->app['log']->channel('db');
-        });
+        $this->registerDbLog();
 
-        $this->app->singleton('db.events', function () {
-            return Collection::make();
-        });
+        $this->registerDbEvents();
 
         $this->listenEvents();
 
-        register_shutdown_function([$this, 'logQueries']);
+        $this->logWhenTerminating();
     }
 
     /**
+     * Register db log.
+     *
+     * @return void
+     */
+    protected function registerDbLog()
+    {
+        $this->app->singleton('db.log', function () {
+            return $this->app['log']->channel('db');
+        });
+    }
+
+    /**
+     * Register db events.
+     *
+     * @return void
+     */
+    protected function registerDbEvents()
+    {
+        $this->app->singleton('db.events', function () {
+            return Collection::make();
+        });
+    }
+
+    /**
+     * Log when terminating application.
+     *
+     * @return void
+     */
+    protected function logWhenTerminating()
+    {
+        $this->app->terminating(function () {
+            $this->logQueries();
+
+            $this->registerDbEvents();
+        });
+    }
+
+    /**
+     * Debugging status.
+     *
      * @return bool
      */
     protected function debugging()
@@ -47,6 +83,8 @@ class ServiceProvider extends BaseServiceProvider
 
     /**
      * Listen events.
+     *
+     * @return void
      */
     protected function listenEvents()
     {
@@ -66,6 +104,8 @@ class ServiceProvider extends BaseServiceProvider
 
     /**
      * Log queries.
+     *
+     * @return void
      */
     public function logQueries()
     {
