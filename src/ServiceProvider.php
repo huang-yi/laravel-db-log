@@ -20,10 +20,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/channels.php', 'logging.channels');
 
-        if (! $this->debugging()) {
-            return;
-        }
-
         $this->registerDbLog();
 
         $this->registerDbEvents();
@@ -70,16 +66,6 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Debugging status.
-     *
-     * @return bool
-     */
-    protected function debugging()
-    {
-        return $this->app['config']['logging.channels.db.debug'];
-    }
-
-    /**
      * Listen events.
      *
      * @return void
@@ -95,9 +81,21 @@ class ServiceProvider extends BaseServiceProvider
 
         foreach ($events as $event) {
             $this->app['events']->listen($event, function ($event) {
-                $this->app['db.events']->push($event);
+                if ($this->debugging()) {
+                    $this->app['db.events']->push($event);
+                }
             });
         }
+    }
+
+    /**
+     * Debugging status.
+     *
+     * @return bool
+     */
+    protected function debugging()
+    {
+        return $this->app['config']['logging.channels.db.debug'];
     }
 
     /**
