@@ -66,8 +66,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->terminating(function () {
             $this->logQueries();
-
-            $this->registerDbEvents();
         });
     }
 
