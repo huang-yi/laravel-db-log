@@ -65,7 +65,7 @@ class Transformer
         $content = sprintf("%s %s", $method, $this->request->fullUrl());
 
         if ($method !== 'GET') {
-            $content = sprintf("%s %s", $content, json_encode($this->request->all()));
+            $content = sprintf("%s %s", $content, json_encode($this->request->input()));
         }
 
         return $content;
